@@ -12,14 +12,14 @@ namespace Contao\CoreBundle\EventListener;
 
 use Contao\ClassLoader;
 use Contao\CoreBundle\Adapter\ConfigAdapter;
+use Contao\CoreBundle\Events\ContaoEvents;
+use Contao\CoreBundle\Events\InitializeSystemEvent;
 use Contao\CoreBundle\Session\Attribute\AttributeBagAdapter;
 use Contao\CoreBundle\Exception\AjaxRedirectResponseException;
 use Contao\CoreBundle\Exception\BadRequestTokenHttpException;
 use Contao\CoreBundle\Exception\IncompleteInstallationHttpException;
 use Contao\CoreBundle\Exception\InsecureInstallationHttpException;
 use Contao\Input;
-use Contao\System;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -229,7 +229,12 @@ class InitializeSystemListener extends ScopeAwareListener
             mb_regex_encoding($this->config->get('characterSet'));
         }
 
-        $this->triggerInitializeSystemHook();
+        // Trigger the initializeSystem hook (see #5665)
+        $this->container
+            ->get('event_dispatcher')
+            ->dispatch(ContaoEvents::INITIALIZE_SYSTEM, new InitializeSystemEvent($this->rootDir))
+        ;
+
         $this->handleRequestToken($request);
     }
 
@@ -357,18 +362,6 @@ class InitializeSystemListener extends ScopeAwareListener
     {
         $this->iniSet('date.timezone', $this->config->get('timeZone'));
         date_default_timezone_set($this->config->get('timeZone'));
-    }
-
-    /**
-     * Triggers the initializeSystem hook (see #5665).
-     */
-    private function triggerInitializeSystemHook()
-    {
-        $this->container->get('event_dispatcher')->dispatch('contao.initialize_system', new Event());
-
-        if (file_exists($this->rootDir . '/system/config/initconfig.php')) {
-            include $this->rootDir . '/system/config/initconfig.php';
-        }
     }
 
     /**
