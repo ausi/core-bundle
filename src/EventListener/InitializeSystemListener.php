@@ -19,6 +19,7 @@ use Contao\CoreBundle\Exception\IncompleteInstallationHttpException;
 use Contao\CoreBundle\Exception\InsecureInstallationHttpException;
 use Contao\Input;
 use Contao\System;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -363,11 +364,7 @@ class InitializeSystemListener extends ScopeAwareListener
      */
     private function triggerInitializeSystemHook()
     {
-        if (isset($GLOBALS['TL_HOOKS']['initializeSystem']) && is_array($GLOBALS['TL_HOOKS']['initializeSystem'])) {
-            foreach ($GLOBALS['TL_HOOKS']['initializeSystem'] as $callback) {
-                System::importStatic($callback[0])->$callback[1]();
-            }
-        }
+        $this->container->get('event_dispatcher')->dispatch('contao.initialize_system', new Event());
 
         if (file_exists($this->rootDir . '/system/config/initconfig.php')) {
             include $this->rootDir . '/system/config/initconfig.php';
