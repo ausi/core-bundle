@@ -12,8 +12,8 @@ namespace Contao\CoreBundle\EventListener;
 
 use Contao\ClassLoader;
 use Contao\CoreBundle\Adapter\ConfigAdapter;
-use Contao\CoreBundle\Events\ContaoEvents;
-use Contao\CoreBundle\Events\InitializeSystemEvent;
+use Contao\CoreBundle\Event\ContaoEvents;
+use Contao\CoreBundle\Event\InitializeSystemEvent;
 use Contao\CoreBundle\Session\Attribute\AttributeBagAdapter;
 use Contao\CoreBundle\Exception\AjaxRedirectResponseException;
 use Contao\CoreBundle\Exception\BadRequestTokenHttpException;
